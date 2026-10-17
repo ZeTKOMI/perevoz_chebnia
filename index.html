@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f14">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Учёт щебня GH</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--r:12px}
+html[data-theme=dark]{--bg:#0b0f14;--panel:#131a23;--panel2:#1b2532;--text:#e9f0f6;--mut:#8ea1b5;--acc:#43b96f;--accD:#2f8f54;--danger:#ff5f5f;--warn:#e5b64a;--line:#243244;--chip:#1e2a3a}
+html[data-theme=light]{--bg:#eef2f5;--panel:#ffffff;--panel2:#f2f6f9;--text:#17222e;--mut:#5b6b7c;--acc:#2e9e57;--accD:#257f46;--danger:#d94848;--warn:#b07f16;--line:#d8e0e8;--chip:#e6edf3}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;align-items:center;gap:10px}
+.logo{width:34px;height:34px;flex:none}
+header h1{font-size:17px;line-height:1.1}
+header .sub{font-size:11px;color:var(--mut)}
+header .grow{flex:1}
+.btn{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px;cursor:pointer;min-height:44px}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn.pri:hover{background:var(--accD)}
+.btn.small{min-height:36px;padding:6px 10px;font-size:13px}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn:disabled{opacity:.5}
+nav{display:flex;gap:4px;padding:6px 10px;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{flex:1;min-width:86px;background:none;border:none;color:var(--mut);padding:10px 6px;font-size:13px;cursor:pointer;border-radius:10px;white-space:nowrap}
+nav button.on{color:var(--text);background:var(--chip);font-weight:600;box-shadow:inset 0 -2px 0 var(--acc)}
+main{max-width:1060px;margin:0 auto;padding:14px;padding-bottom:30px}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;gap:12px}
+.cards{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.kpi .v{font-size:22px;font-weight:700}
+.kpi .l{font-size:12px;color:var(--mut);margin-top:2px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.panel h3{font-size:14px;margin-bottom:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.charts2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.chartScroll{overflow-x:auto}
+.barsSvg .bar{fill:var(--acc)}.barsSvg .bv{fill:var(--text);font-size:10px}.barsSvg .bl{fill:var(--mut);font-size:9px}
+.barsSvg .plan{stroke:var(--warn);stroke-dasharray:5 4}.barsSvg .planT{fill:var(--warn);font-size:10px}
+.donutWrap{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.donut{width:150px;flex:none}.dTot{fill:var(--text);font-size:15px;font-weight:700}.dSub{fill:var(--mut);font-size:9px}
+.legend{list-style:none;font-size:13px}.legend li{display:flex;align-items:center;gap:8px;margin:5px 0}
+.legend i{width:11px;height:11px;border-radius:3px;flex:none}
+.hb{display:flex;align-items:center;gap:10px;margin:8px 0}
+.hbN{width:110px;font-size:13px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbT{flex:1;background:var(--panel2);border-radius:6px;height:16px;overflow:hidden}
+.hbB{height:100%;background:var(--acc);border-radius:6px}
+.hbV{width:70px;text-align:right;font-size:13px;flex:none}
+.rangeRow{display:flex;gap:6px;margin-bottom:10px}
+.rangeRow button{background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer}
+.rangeRow button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.fRow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.fRow input,.fRow select{flex:1;min-width:110px}
+input,select,textarea{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px;font-size:14px;min-height:44px;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--acc);border-color:var(--acc)}
+textarea{min-height:60px;resize:vertical}
+.trip{display:flex;gap:12px;align-items:center;cursor:pointer;transition:border-color .15s}
+.trip:hover{border-color:var(--acc)}
+.trip .big{font-size:17px;font-weight:700}
+.trip .meta{font-size:12px;color:var(--mut);margin-top:3px}
+.trip .right{margin-left:auto;text-align:right;flex:none}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px}
+.b-ok{background:rgba(67,185,111,.18);color:var(--acc)}
+.b-tr{background:rgba(229,182,74,.18);color:var(--warn)}
+.b-can{background:rgba(255,95,95,.15);color:var(--danger)}
+.chip{display:inline-block;background:var(--chip);border-radius:6px;padding:2px 8px;font-size:11px;margin-left:6px}
+.autoCard{display:flex;gap:12px;align-items:center}
+.autoCard img.cov{width:76px;height:56px;object-fit:cover;border-radius:10px;border:1px solid var(--line);flex:none;background:var(--panel2)}
+.autoCard .covBtn{width:76px;height:56px;flex:none;border-radius:10px;border:1px dashed var(--mut);background:var(--panel2);color:var(--mut);font-size:20px;cursor:pointer}
+.mut{color:var(--mut);font-size:13px}
+.empty{text-align:center;color:var(--mut);padding:30px 10px}
+#modal,#lightbox{position:fixed;inset:0;display:none;z-index:50}
+#modal.on,#lightbox.on{display:block}
+#modal .ov,#lightbox{background:rgba(4,8,12,.75)}
+.mBox{position:relative;max-width:560px;margin:3vh auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;max-height:94vh;overflow-y:auto;width:calc(100% - 24px)}
+.mBox h2{font-size:17px;margin-bottom:14px}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.formGrid .full{grid-column:1/-1}
+.formGrid label{font-size:12px;color:var(--mut);display:block;margin-bottom:4px}
+.photoBtns{display:flex;gap:8px;flex-wrap:wrap}
+.ph{position:relative;width:88px;height:66px;flex:none}
+.ph img{width:100%;height:100%;object-fit:cover;border-radius:9px;border:1px solid var(--line);cursor:pointer}
+.ph .rm{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:none;font-size:12px;cursor:pointer;line-height:1}
+.ph .kk{position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.65);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px}
+#lightbox{display:none;align-items:center;justify-content:center}
+#lightbox.on{display:flex}
+#lightbox img{max-width:96vw;max-height:92vh;border-radius:8px}
+.rowList{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px;flex-wrap:wrap}
+.rowList input{max-width:110px;min-height:36px;padding:6px 8px}
+.thumbGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px;margin-top:10px}
+.thumb{position:relative}.thumb img{width:100%;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer}
+.thumb input[type=checkbox]{position:absolute;top:4px;left:4px;min-height:auto;width:18px;height:18px}
+.thumb .tk{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,.65);color:#fff;font-size:9px;padding:1px 5px;border-radius:4px}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:22px 10px 30px}
+footer b{color:var(--acc)}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--acc);border-radius:10px;padding:10px 18px;font-size:14px;opacity:0;transition:opacity .3s;z-index:99;pointer-events:none;max-width:90vw}
+#toast.on{opacity:1}
+details{margin:10px 0}details summary{cursor:pointer;color:var(--acc);font-size:14px}
+pre{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:11px;overflow-x:auto;margin-top:8px;white-space:pre-wrap}
+.sec{font-size:15px;font-weight:700;margin:18px 0 8px}
+.expBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:640px){
+  header h1{font-size:15px}
+  nav{position:fixed;bottom:0;left:0;right:0;border-top:1px solid var(--line);border-bottom:none;z-index:30;padding-bottom:env(safe-area-inset-bottom)}
+  nav button{display:flex;flex-direction:column;gap:2px;font-size:11px;padding:8px 2px}
+  nav button .ic{font-size:19px}
+  main{padding-bottom:96px}
+  .formGrid{grid-template-columns:1fr}
+  footer{padding-bottom:100px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <svg class="logo" viewBox="0 0 40 40"><rect x="4" y="14" width="32" height="18" rx="3" fill="#43b96f"/><path d="M8 14 L14 6 h12 l6 8z" fill="#2f8f54"/><circle cx="12" cy="33" r="4" fill="#243244"/><circle cx="28" cy="33" r="4" fill="#243244"/></svg>
+  <div><h1>Учёт щебня GH</h1><div class="sub" id="todayDate"></div></div>
+  <div class="grow"></div>
+  <button class="btn pri" onclick="openTripModal()">+ Рейс</button>
+</header>
+
+<nav>
+  <button class="on" data-tab="dash" onclick="switchTab('dash')"><span class="ic">📊</span>Главная</button>
+  <button data-tab="trips" onclick="switchTab('trips')"><span class="ic">🚛</span>Рейсы</button>
+  <button data-tab="autos" onclick="switchTab('autos')"><span class="ic">🚚</span>Автопарк</button>
+  <button data-tab="exp" onclick="switchTab('exp')"><span class="ic">📤</span>Экспорт</button>
+  <button data-tab="set" onclick="switchTab('set')"><span class="ic">⚙️</span>Настройки</button>
+</nav>
+
+<main>
+
+<!-- ============ ГЛАВНАЯ ============ -->
+<section id="tab-dash" class="tab on">
+  <div class="grid cards" id="kpiRow"></div>
+  <div class="panel" style="margin-top:12px">
+    <h3>Объём по дням, тонны</h3>
+    <div class="rangeRow" id="dashRange">
+      <button data-r="7">7 дн</button><button data-r="14" class="on">14 дн</button><button data-r="30">30 дн</button><button data-r="all">Всё время</button>
+    </div>
+    <div class="chartScroll" id="chartDays"></div>
+  </div>
+  <div class="grid charts2">
+    <div class="panel"><h3>По фракциям</h3><div id="chartFrac"></div></div>
+    <div class="panel"><h3>По автомобилям</h3><div id="chartAuto"></div></div>
+  </div>
+</section>
+
+<!-- ============ РЕЙСЫ ============ -->
+<section id="tab-trips" class="tab">
+  <div class="fRow">
+    <input type="date" id="fFrom"><input type="date" id="fTo">
+    <select id="fAuto"></select><select id="fFrac"></select>
+    <input type="search" id="fSearch" placeholder="Поиск: номер, примечание…">
+  </div>
+  <div id="tripsList"></div>
+</section>
+
+<!-- ============ АВТОПАРК ============ -->
+<section id="tab-autos" class="tab">
+  <div class="panel">
+    <h3 id="autoFormTitle">Добавить автомобиль</h3>
+    <div class="formGrid">
+      <div><label>Гос. номер *</label><input id="aPlate" placeholder="А123ВС 11"></div>
+      <div><label>Марка / модель</label><input id="aModel" placeholder="КАМАЗ 6520"></div>
+      <div><label>Грузоподъёмность, т</label><input id="aCap" type="number" step="0.5"></div>
+      <div><label>Водитель</label><input id="aDriver"></div>
+      <div><label>Телефон</label><input id="aPhone" type="tel"></div>
+      <div><label>Статус</label><select id="aStatus"><option value="active">На линии</option><option value="repair">Ремонт</option><option value="idle">Простой</option></select></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn pri" id="btnAutoSave" onclick="saveAuto()">Сохранить</button>
+      <button class="btn" id="btnAutoCancel" onclick="resetAutoForm()" style="display:none">Отмена</button>
+    </div>
+  </div>
+  <div id="autosList"></div>
+</section>
+
+<!-- ============ ЭКСПОРТ ============ -->
+<section id="tab-exp" class="tab">
+  <div class="panel">
+    <h3>Фильтры выгрузки</h3>
+    <div class="fRow">
+      <input type="date" id="eFrom"><input type="date" id="eTo">
+      <select id="eAuto"></select><select id="eFrac"></select>
+      <select id="eStatus"><option value="">Все статусы</option><option value="delivered">Разгружен</option><option value="transit">В пути</option><option value="cancelled">Отменён</option></select>
+    </div>
+    <div id="expSummary" class="mut"></div>
+    <div class="expBtns">
+      <button class="btn pri" onclick="expExcel()">📊 Скачать Excel (.xls)</button>
+      <button class="btn pri" onclick="expWord()">📄 Скачать Word (.doc)</button>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>Фото</h3>
+    <div class="fRow">
+      <select id="eKind"><option value="">Все фото</option><option value="cab">Кабина / номер</option><option value="bed">Кузов / щебень</option><option value="cover">Фото авто</option><option value="other">Прочие</option></select>
+      <button class="btn small" onclick="selectAllPhotos(true)">Выделить все</button>
+      <button class="btn small" onclick="selectAllPhotos(false)">Снять</button>
+    </div>
+    <div class="thumbGrid" id="expPhotos"></div>
+    <div class="expBtns">
+      <button class="btn" onclick="downloadSelPhotos()">⬇ Скачать выбранные</button>
+      <button class="btn" onclick="photoReport()">🖼 Фотоотчёт одним файлом (.html)</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ НАСТРОЙКИ ============ -->
+<section id="tab-set" class="tab">
+  <div class="panel">
+    <h3>Общие</h3>
+    <div class="formGrid">
+      <div><label>Тема</label><select id="themeSel" onchange="S.theme=this.value;persist();applyTheme()"><option value="dark">Тёмная</option><option value="light">Светлая</option></select></div>
+      <div><label>Основная фракция (по умолчанию)</label><select id="mainFracSel" onchange="S.mainFrac=this.value;persist()"></select></div>
+      <div><label>План на день, тонн (для линии на графике)</label><input id="planInput" type="number" step="1" onchange="S.planDayT=+this.value||0;persist();renderDash()"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Фракции и плотность (т/м³)</h3>
+    <div id="fracList"></div>
+    <div class="fRow" style="margin-top:10px">
+      <input id="fracName" placeholder="Напр. 20-70"><input id="fracDens" type="number" step="0.01" placeholder="Плотность">
+      <button class="btn" onclick="addFrac()">+ Добавить</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Маршруты</h3>
+    <div id="routeList"></div>
+    <div class="fRow" style="margin-top:10px">
+      <input id="routeFrom" placeholder="Откуда"><input id="routeTo" placeholder="Куда">
+      <button class="btn" onclick="addRoute()">+ Добавить</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Синхронизация с Google Таблицами</h3>
+    <p class="mut">Каждый сохранённый рейс автоматически отправляется в таблицу. Фото в таблицу не передаются (слишком тяжёлые — храните локально/в фотоотчёте).</p>
+    <details>
+      <summary>📖 Инструкция: как подключить (2 минуты)</summary>
+      <ol style="margin:10px 0 0 18px;font-size:13px;line-height:1.7">
+        <li>Создайте новую таблицу на <b>sheets.new</b></li>
+        <li>Меню <b>Расширения → Apps Script</b></li>
+        <li>Удалите всё, вставьте код ниже, нажмите 💾</li>
+        <li><b>Развернуть → Новое развёртывание → Веб-приложение</b>; «Выполнять от моего имени», доступ — «Все»</li>
+        <li>Скопируйте URL вида <code>https://script.google.com/macros/s/…/exec</code> в поле ниже</li>
+      </ol>
+      <pre id="gsCode"></pre>
+      <button class="btn small" onclick="copyGs()">📋 Скопировать код скрипта</button>
+    </details>
+    <div class="fRow" style="margin-top:10px">
+      <input id="gsUrl" placeholder="https://script.google.com/macros/s/…/exec" style="flex:3">
+      <button class="btn pri" onclick="saveGs()">Сохранить</button>
+      <button class="btn" onclick="gsSendAll()">Отправить все рейсы</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Данные</h3>
+    <div class="expBtns" style="margin-top:0">
+      <button class="btn" onclick="exportBackup()">💾 Резервная копия (.json)</button>
+      <label class="btn" style="cursor:pointer">📥 Восстановить из копии <input type="file" id="fileImport" accept=".json" hidden onchange="importBackup(this)"></label>
+      <button class="btn danger" onclick="resetAll()">🗑 Сбросить всё</button>
+      <button class="btn pri" id="btnInstall" style="display:none" onclick="installApp()">📲 Установить приложение</button>
+    </div>
+    <p class="mut" style="margin-top:10px">Для сборки APK: разместите файлы на любом хостинге (например, GitHub Pages), затем откройте <b>pwabuilder.com</b>, вставьте адрес и скачайте Android-пакет. Подробная инструкция в паспорте проекта.</p>
+  </div>
+</section>
+
+</main>
+
+<footer><b>Green House</b> • Учёт щебня • © 2026 • v1.0</footer>
+
+<!-- Модалка рейса -->
+<div id="modal"><div class="ov" onclick="closeTripModal()"></div>
+  <div class="mBox">
+    <h2 id="mTitle">Новый рейс</h2>
+    <div class="formGrid">
+      <div><label>Дата и время *</label><input id="tDate" type="datetime-local"></div>
+      <div><label>Автомобиль *</label><select id="tAuto"></select></div>
+      <div><label>Масса, кг</label><input id="tKg" type="number" inputmode="numeric" placeholder="напр. 28000"></div>
+      <div><label>Объём, м³</label><input id="tM3" type="number" step="0.1" placeholder="считается автоматически"></div>
+      <div><label>Фракция</label><select id="tFrac" onchange="recalcFromKg()"></select></div>
+      <div><label>Маршрут</label><select id="tRoute"></select></div>
+      <div><label>Статус</label><select id="tStatus"><option value="delivered">Разгружен</option><option value="transit">В пути</option><option value="cancelled">Отменён</option></select></div>
+      <div class="full"><label>Примечание</label><input id="tNote" placeholder="накладная, замечания…"></div>
+    </div>
+    <div class="sec">Фото (до 4)</div>
+    <div class="photoBtns">
+      <button class="btn small" onclick="pickPhoto('cab')">📷 Кабина / номер</button>
+      <button class="btn small" onclick="pickPhoto('bed')">📷 Кузов / щебень</button>
+      <button class="btn small" onclick="pickPhoto('other')">➕ Ещё</button>
+    </div>
+    <div id="photosBox" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px"></div>
+    <input type="file" id="filePhoto" accept="image/*" capture="environment" hidden>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn pri" style="flex:1" onclick="saveTrip()">Сохранить рейс</button>
+      <button class="btn danger" id="btnDelTrip" style="display:none" onclick="delTrip()">Удалить</button>
+      <button class="btn" onclick="closeTripModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div id="lightbox" onclick="this.classList.remove('on')"><img id="lbImg" alt=""></div>
+<div id="toast"></div>
+
+<script>
+/* ================== ХРАНИЛИЩЕ ================== */
+const LS='ghschet_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const defaultData={
+  trips:[],
+  autos:[],
+  fractions:[
+    {id:'f1',name:'0–5 (отсев)',density:1.55},
+    {id:'f2',name:'5–20',density:1.37},
+    {id:'f3',name:'20–40',density:1.41},
+    {id:'f4',name:'31,5–63',density:1.40}
+  ],
+  routes:[{id:'r1',from:'Чиньяворик',to:'Объячево (запасник)'}],
+  settings:{theme:'dark',mainFrac:'f4',planDayT:0,gsUrl:''},
+  counters:{trip:0}
+};
+let S_DATA;
+try{S_DATA=JSON.parse(localStorage.getItem(LS))||structuredClone(defaultData)}
+catch(e){S_DATA=structuredClone(defaultData)}
+// страховка от старых/битых данных
+for(const k in defaultData) if(!(k in S_DATA)) S_DATA[k]=structuredClone(defaultData[k]);
+let trips=S_DATA.trips, autos=S_DATA.autos, FR=S_DATA.fractions, RO=S_DATA.routes;
+let S=S_DATA.settings;
+function persist(){S_DATA.trips=trips;S_DATA.autos=autos;S_DATA.fractions=FR;S_DATA.routes=RO;S_DATA.settings=S;localStorage.setItem(LS,JSON.stringify(S_DATA))}
+
+/* ================== INDEXEDDB (фото) ================== */
+const DBN='gh_photos',ST='photos';
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(DBN,1);r.onupgradeneeded=e=>e.target.result.createObjectStore(ST,{keyPath:'id'});r.onsuccess=e=>res(e.target.result);r.onerror=rej})}
+async function dbPut(rec){const db=await idb();return new Promise((res,rej)=>{const t=db.transaction(ST,'readwrite');t.objectStore(ST).put(rec);t.oncomplete=res;t.onerror=rej})}
+async function dbGet(id){const db=await idb();return new Promise(res=>{const q=db.transaction(ST).objectStore(ST).get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})}
+async function dbAll(){const db=await idb();return new Promise(res=>{const q=db.transaction(ST).objectStore(ST).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([])})}
+async function dbDel(id){const db=await idb();return new Promise(res=>{const t=db.transaction(ST,'readwrite');t.objectStore(ST).delete(id);t.oncomplete=res})}
+let PH={}; // id -> record (кэш)
+async function loadPhotos(){PH={};(await dbAll()).forEach(r=>PH[r.id]=r)}
+
+/* ================== УТИЛИТЫ ================== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=(n,d=0)=>(+n||0).toLocaleString('ru-RU',{maximumFractionDigits:d,minimumFractionDigits:0});
+const fmtT=kg=>fmt(kg/1000,1);
+const dKey=dt=>String(dt).slice(0,10);
+const fmtD=d=>{const[a,b,c]=dKey(d).split('-');return c+'.'+b};
+const fmtDT=d=>{const x=new Date(d);return fmtD(d)+' '+String(x.getHours()).padStart(2,'0')+':'+String(x.getMinutes()).padStart(2,'0')};
+const stName={delivered:'Разгружен',transit:'В пути',cancelled:'Отменён'};
+const stCls={delivered:'b-ok',transit:'b-tr',cancelled:'b-can'};
+const kindName={cab:'Кабина',bed:'Кузов',cover:'Авто',other:'Фото'};
+const PAL=['#43b96f','#e0b64a','#5aa7e0','#c67ae0','#e0745a','#8ea1b5','#3ecfc0'];
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2600)}
+function dl(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+const plateOf=id=>{const a=autos.find(x=>x.id===id);return a?a.plate:'—'};
+const fracOf=id=>FR.find(f=>f.id===id);
+const routeOf=id=>RO.find(r=>r.id===id);
+
+function applyTheme(){document.documentElement.dataset.theme=S.theme||'dark'}
+function switchTab(name){
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('on',s.id==='tab-'+name));
+  if(name==='dash')renderDash();
+  if(name==='trips')renderTrips();
+  if(name==='autos')renderAutos();
+  if(name==='exp')renderExp();
+  if(name==='set')renderSet();
+}
+
+/* ================== ГЛАВНАЯ / ГРАФИКИ ================== */
+let dashRange=14;
+function renderDash(){
+  const today=dKey(new Date().toISOString());
+  const ok=trips.filter(t=>t.status!=='cancelled');
+  const tToday=ok.filter(t=>dKey(t.date)===today);
+  const sum=(arr,k)=>arr.reduce((s,t)=>s+(+t[k]||0),0);
+  $('kpiRow').innerHTML=[
+    ['Сегодня',fmtT(sum(tToday,'kg'))+' т',fmt(sum(tToday,'m3'),1)+' м³ · '+tToday.length+' рейс(ов)'],
+    ['Всего',fmtT(sum(ok,'kg'))+' т',fmt(sum(ok,'m3'),1)+' м³'],
+    ['Рейсов всего',ok.length,'из них отменено: '+(trips.length-ok.length)],
+    ['Машин в парке',autos.length,'на линии: '+autos.filter(a=>a.status==='active').length]
+  ].map(k=>`<div class="card kpi"><div class="v">${k[1]}</div><div class="l">${k[0]}</div><div class="mut" style="font-size:11px;margin-top:2px">${k[2]}</div></div>`).join('');
+
+  // по дням
+  let days=[],now=new Date();now.setHours(0,0,0,0);
+  if(dashRange==='all'){
+    const ks=[...new Set(ok.map(t=>dKey(t.date)))].sort();
+    days=ks.map(k=>({l:fmtD(k),v:0}));
+    ok.forEach(t=>{const d=days.find(x=>x.l===fmtD(dKey(t.date)));if(d)d.v+=+t.kg||0});
+    if(days.length>60)days=days.slice(-60);
+  }else{
+    for(let i=dashRange-1;i>=0;i--){const d=new Date(now);d.setDate(d.getDate()-i);days.push({l:fmtD(d),v:0,dk:dKey(d.toISOString())})}
+    ok.forEach(t=>{const d=days.find(x=>x.dk===dKey(t.date));if(d)d.v+=+t.kg||0});
+  }
+  drawBars($('chartDays'),days,S.planDayT*1000);
+
+  // по фракциям
+  const byF={};ok.forEach(t=>{byF[t.fractionId]=(byF[t.fractionId]||0)+(+t.kg||0)});
+  drawDonut($('chartFrac'),Object.entries(byF).map(([id,v],i)=>({name:(fracOf(id)||{}).name||'—',val:v,color:PAL[i%PAL.length]})));
+
+  // по авто
+  const byA={};ok.forEach(t=>{byA[t.autoId]=(byA[t.autoId]||0)+(+t.kg||0)});
+  drawHbars($('chartAuto'),Object.entries(byA).map(([id,v])=>({name:plateOf(id),val:v})).sort((a,b)=>b.val-a.val));
+}
+function drawBars(el,data,plan){
+  if(!data.length){el.innerHTML='<div class="empty">Нет данных за период</div>';return}
+  const max=Math.max(...data.map(d=>d.v),plan||0,1),bw=Math.max(26,Math.min(44,520/data.length));
+  const H=180,W=Math.ceil(data.length*bw);let s='';
+  data.forEach((d,i)=>{
+    const h=Math.round(d.v/max*(H-46)),x=Math.round(i*bw+4),w=Math.round(bw-9),y=H-26-h;
+    s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" class="bar"/>`;
+    if(d.v)s+=`<text x="${x+w/2}" y="${y-4}" text-anchor="middle" class="bv">${fmt(d.v/1000,1)}</text>`;
+    s+=`<text x="${x+w/2}" y="${H-9}" text-anchor="middle" class="bl">${d.l}</text>`;
+  });
+  if(plan){const py=Math.round(H-26-plan/max*(H-46));s+=`<line x1="0" x2="${W}" y1="${py}" y2="${py}" class="plan"/><text x="${W-3}" y="${py-4}" text-anchor="end" class="planT">план ${fmt(plan/1000,1)} т</text>`}
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:${W}px;min-width:100%" class="barsSvg">${s}</svg>`;
+}
+function drawDonut(el,parts){
+  const tot=parts.reduce((s,p)=>s+p.val,0);
+  if(!tot){el.innerHTML='<div class="empty">Нет данных</div>';return}
+  const r=42,c=2*Math.PI*r;let off=0,segs='';
+  parts.forEach(p=>{const len=p.val/tot*c;segs+=`<circle r="${r}" cx="60" cy="60" fill="none" stroke="${p.color}" stroke-width="17" stroke-dasharray="${len} ${c-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`;off+=len});
+  el.innerHTML=`<div class="donutWrap"><svg viewBox="0 0 120 120" class="donut">${segs}<text x="60" y="57" text-anchor="middle" class="dTot">${fmt(tot/1000,1)} т</text><text x="60" y="73" text-anchor="middle" class="dSub">всего</text></svg>
+  <ul class="legend">${parts.map(p=>`<li><i style="background:${p.color}"></i>${esc(p.name)} — <b>${fmt(p.val/1000,1)} т</b> (${Math.round(p.val/tot*100)}%)</li>`).join('')}</ul></div>`;
+}
+function drawHbars(el,items){
+  if(!items.length){el.innerHTML='<div class="empty">Нет данных</div>';return}
+  const max=Math.max(...items.map(i=>i.val),1);
+  el.innerHTML=items.map(i=>`<div class="hb"><div class="hbN">${esc(i.name)}</div><div class="hbT"><div class="hbB" style="width:${Math.max(2,i.val/max*100)}%"></div></div><div class="hbV">${fmt(i.val/1000,1)} т</div></div>`).join('');
+}
+
+/* ================== РЕЙСЫ ================== */
+function selOpts(arr,fn,sel,empty){return `<option value="">${empty}</option>`+arr.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${fn(x)}</option>`).join('')}
+function fillSelects(){
+  $('fAuto').innerHTML=selOpts(autos,a=>esc(a.plate)+(${'active':''}[a.status],''),$('fAuto').value,'Все авто');
+  $('fAuto').innerHTML=selOpts(autos,a=>esc(a.plate),$('fAuto').value,'Все авто');
+  $('fFrac').innerHTML=selOpts(FR,f=>esc(f.name),$('fFrac').value,'Все фракции');
+  $('eAuto').innerHTML=selOpts(autos,a=>esc(a.plate),$('eAuto').value,'Все авто');
+  $('eFrac').innerHTML=selOpts(FR,f=>esc(f.name),$('eFrac').value,'Все фракции');
+}
+function filteredTrips(p){
+  const from=$(p+'From').value,to=$(p+'To').value,a=$(p+'Auto').value,f=$(p+'Frac').value;
+  return trips.filter(t=>{
+    if(from&&dKey(t.date)<from)return false;
+    if(to&&dKey(t.date)>to)return false;
+    if(a&&t.autoId!==a)return false;
+    if(f&&t.fractionId!==f)return false;
+    return true;
+  }).sort((x,y)=>y.date.localeCompare(x.date));
+}
+function renderTrips(){
+  fillSelects();
+  const q=($('fSearch').value||'').toLowerCase();
+  let list=filteredTrips('f');
+  if(q)list=list.filter(t=>(plateOf(t.autoId)+' '+(t.note||'')).toLowerCase().includes(q));
+  if(!list.length){$('tripsList').innerHTML='<div class="empty">Рейсов нет. Нажмите «+ Рейс», чтобы добавить первый.</div>';return}
+  const sum=(k)=>fmt(list.reduce((s,t)=>t.status!=='cancelled'?s+(+t[k]||0):s,0),k==='m3'?1:0);
+  $('tripsList').innerHTML=`<div class="mut" style="margin-bottom:8px">Показано: ${list.length} · ${fmt(list.reduce((s,t)=>t.status!=='cancelled'?s+(+t.kg||0):s,0)/1000,1)} т · ${fmt(list.reduce((s,t)=>t.status!=='cancelled'?s+(+t.m3||0):s,0),1)} м³</div>`+
+  list.map(t=>{
+    const rt=routeOf(t.routeId),f=fracOf(t.fractionId);
+    const phCount=t.photoIds?t.photoIds.length:0;
+    return `<div class="card trip" onclick="openTripModal('${t.id}')">
+      <div style="flex:1;min-width:0">
+        <div class="big">${esc(plateOf(t.autoId))} <span class="badge ${stCls[t.status]}">${stName[t.status]}</span></div>
+        <div class="meta">${fmtDT(t.date)} · ${esc(f?f.name:'—')} · ${esc(rt?rt.from+' → '+rt.to:'—')}${phCount?` <span class="chip">📷 ${phCount}</span>`:''}${t.note?`<div style="margin-top:2px">📝 ${esc(t.note)}</div>`:''}</div>
+      </div>
+      <div class="right"><div class="big">${fmtT(t.kg)} т</div><div class="meta">${fmt(t.m3,1)} м³</div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ---------- модалка рейса ---------- */
+let editingId=null,tempPhotos=[],pendingKind='cab',m3Dirty=false;
+async function openTripModal(id){
+  editingId=id||null;m3Dirty=false;tempPhotos=[];
+  $('tAuto').innerHTML=autos.length?autos.map(a=>`<option value="${a.id}">${esc(a.plate)}${a.model?' · '+esc(a.model):''}</option>`).join(''):'<option value="">— сначала добавьте авто —</option>';
+  $('tFrac').innerHTML=FR.map(f=>`<option value="${f.id}">${esc(f.name)} (${f.density} т/м³)</option>`).join('');
+  $('tRoute').innerHTML=RO.map(r=>`<option value="${r.id}">${esc(r.from)} → ${esc(r.to)}</option>`).join('');
+  if(id){
+    const t=trips.find(x=>x.id===id);if(!t)return;
+    $('mTitle').textContent='Рейс от '+fmtDT(t.date);
+    $('tDate').value=t.date.slice(0,16);$('tAuto').value=t.autoId;$('tKg').value=t.kg;$('tM3').value=t.m3;m3Dirty=true;
+    $('tFrac').value=t.fractionId;$('tRoute').value=t.routeId;$('tStatus').value=t.status;$('tNote').value=t.note||'';
+    $('btnDelTrip').style.display='';
+    for(const pid of (t.photoIds||[])){const r=await dbGet(pid);if(r)tempPhotos.push({...r,url:URL.createObjectURL(r.blob),existing:true})}
+  }else{
+    $('mTitle').textContent='Новый рейс';
+    const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+    $('tDate').value=now.toISOString().slice(0,16);
+    $('tKg').value='';$('tM3').value='';$('tStatus').value='delivered';$('tNote').value='';
+    $('tFrac').value=S.mainFrac||FR[0]?.id;
+    if(autos.length)$('tAuto').value=autos[autos.length-1].id;
+    if(S.lastRoute&&RO.some(r=>r.id===S.lastRoute))$('tRoute').value=S.lastRoute;
+    $('btnDelTrip').style.display='none';
+  }
+  renderTempPhotos();$('modal').classList.add('on');
+}
+function closeTripModal(){$('modal').classList.remove('on')}
+function recalcFromKg(){
+  const f=fracOf($('tFrac').value);if(!f)return;
+  if(!m3Dirty){const kg=+$('tKg').value;if(kg>0)$('tM3').value=(kg/(f.density*1000)).toFixed(1)}
+}
+$('tKg').addEventListener('input',recalcFromKg);
+$('tM3').addEventListener('input',()=>{m3Dirty=!!$('tM3').value});
+
+function pickPhoto(kind){
+  if(tempPhotos.length>=4){toast('Максимум 4 фото на рейс');return}
+  pendingKind=kind;$('filePhoto').click();
+}
+async function compress(file){
+  const bmp=await createImageBitmap(file);
+  const k=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+  const c=document.createElement('canvas');c.width=Math.round(bmp.width*k);c.height=Math.round(bmp.height*k);
+  c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);
+  return new Promise(r=>c.toBlob(r,'image/jpeg',0.78));
+}
+$('filePhoto').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const blob=await compress(f);
+    tempPhotos.push({id:uid(),kind:pendingKind,blob,url:URL.createObjectURL(blob)});
+    renderTempPhotos();
+  }catch(err){toast('Не удалось обработать фото')}
+});
+function renderTempPhotos(){
+  $('photosBox').innerHTML=tempPhotos.map((p,i)=>`<div class="ph"><img src="${p.url}" onclick="openLB([this.src],0)"><button class="rm" onclick="tempPhotos.splice(${i},1);renderTempPhotos()">✕</button><span class="kk">${kindName[p.kind]||'Фото'}</span></div>`).join('')||'<div class="mut">Фото не добавлены</div>';
+}
+async function saveTrip(){
+  const autoId=$('tAuto').value;
+  if(!autoId){toast('Выберите автомобиль (сначала добавьте в «Автопарке»)');return}
+  let kg=+$('tKg').value||0,m3=+$('tM3').value||0;
+  const fracId=$('tFrac').value,f=fracOf(fracId);
+  if(!kg&&!m3){toast('Укажите массу (кг) или объём (м³)');return}
+  if(kg&&!m3&&f)m3=+(kg/(f.density*1000)).toFixed(1);
+  if(m3&&!kg&&f)kg=Math.round(m3*f.density*1000);
+  const dateVal=$('tDate').value;
+  if(!dateVal){toast('Укажите дату');return}
+  const routeId=$('tRoute').value;S.lastRoute=routeId;
+  const base={date:dateVal,autoId,kg,m3,fractionId:fracId,routeId,status:$('tStatus').value,note:$('tNote').value.trim(),updatedAt:new Date().toISOString()};
+  let t;
+  if(editingId){t=trips.find(x=>x.id===editingId);Object.assign(t,base)}
+  else{S.counters.trip++;t={id:uid(),num:'ГХ-'+new Date().getFullYear()+'-'+String(S.counters.trip).padStart(4,'0'),createdAt:new Date().toISOString(),photoIds:[],...base};trips.push(t)}
+  // фото
+  for(const p of tempPhotos){
+    await dbPut({id:p.id,tripId:t.id,autoId,fractionId:fracId,date:dKey(dateVal),kind:p.kind,ts:Date.now(),blob:p.blob});
+  }
+  t.photoIds=tempPhotos.map(p=>p.id);
+  persist();
+  if(S.gsUrl){gsSend(t).then(()=>toast('Рейс сохранён и отправлен в Google Таблицу ✓')).catch(()=>toast('Рейс сохранён, но отправка в таблицу не удалась'))}
+  else toast('Рейс сохранён ✓');
+  await loadPhotos();closeTripModal();renderAll();
+}
+async function delTrip(){
+  if(!editingId)return;
+  if(!confirm('Удалить рейс и его фото?'))return;
+  const t=trips.find(x=>x.id===editingId);
+  for(const pid of (t?.photoIds||[]))await dbDel(pid);
+  trips=trips.filter(x=>x.id!==editingId);
+  persist();await loadPhotos();closeTripModal();renderAll();toast('Рейс удалён');
+}
+function openLB(urls,i){$('lbImg').src=urls[i];$('lightbox').classList.add('on')}
+
+/* ================== АВТОПАРК ================== */
+let editingAuto=null;
+function resetAutoForm(){editingAuto=null;$('autoFormTitle').textContent='Добавить автомобиль';['aPlate','aModel','aCap','aDriver','aPhone'].forEach(i=>$(i).value='');$('aStatus').value='active';$('btnAutoCancel').style.display='none'}
+function saveAuto(){
+  const plate=$('aPlate').value.trim();
+  if(!plate){toast('Укажите гос. номер');return}
+  const data={plate,model:$('aModel').value.trim(),cap:+$('aCap').value||0,driver:$('aDriver').value.trim(),phone:$('aPhone').value.trim(),status:$('aStatus').value};
+  if(editingAuto){Object.assign(autos.find(a=>a.id===editingAuto),data)}
+  else autos.push({id:uid(),cover:null,...data});
+  persist();resetAutoForm();renderAutos();renderAll();toast('Сохранено');
+}
+function editAuto(id){
+  const a=autos.find(x=>x.id===id);if(!a)return;editingAuto=id;
+  $('autoFormTitle').textContent='Редактирование: '+a.plate;
+  $('aPlate').value=a.plate;$('aModel').value=a.model||'';$('aCap').value=a.cap||'';$('aDriver').value=a.driver||'';$('aPhone').value=a.phone||'';$('aStatus').value=a.status||'active';
+  $('btnAutoCancel').style.display='';window.scrollTo({top:0,behavior:'smooth'});
+}
+async function delAuto(id){
+  if(!confirm('Удалить автомобиль? Его рейсы останутся в журнале.'))return;
+  const a=autos.find(x=>x.id===id);
+  if(a?.cover)await dbDel(a.cover);
+  autos=autos.filter(x=>x.id!==id);persist();await loadPhotos();renderAutos();renderAll();
+}
+async function setCover(id){
+  const inp=$('filePhoto');pendingKind='cover';
+  inp.onchange=async e=>{
+    const f=e.target.files[0];e.target.value='';inp.onchange=photoDefaultHandler;if(!f)return;
+    try{
+      const blob=await compress(f),a=autos.find(x=>x.id===id);
+      if(a.cover)await dbDel(a.cover);
+      const pid=uid();
+      await dbPut({id:pid,tripId:null,autoId:id,fractionId:'',date:dKey(new Date().toISOString()),kind:'cover',ts:Date.now(),blob});
+      a.cover=pid;persist();await loadPhotos();renderAutos();toast('Фото авто обновлено');
+    }catch(err){toast('Ошибка фото')}
+  };
+  inp.click();
+}
+const photoDefaultHandler=$('filePhoto').onchange;
+function renderAutos(){
+  if(!autos.length){$('autosList').innerHTML='<div class="empty">Автопарк пуст — добавьте первую машину выше.</div>';return}
+  $('autosList').innerHTML=autos.map(a=>{
+    const ts=trips.filter(t=>t.autoId===a.id&&t.status!=='cancelled');
+    const kg=ts.reduce((s,t)=>s+(+t.kg||0),0),m3=ts.reduce((s,t)=>s+(+t.m3||0),0);
+    const st=a.status==='active'?'<span class="badge b-ok">На линии</span>':a.status==='repair'?'<span class="badge b-can">Ремонт</span>':'<span class="badge b-tr">Простой</span>';
+    const cov=a.cover&&PH[a.cover]?`<img class="cov" src="${URL.createObjectURL(PH[a.cover].blob)}" onclick="setCover('${a.id}')" title="Заменить фото">`:`<button class="covBtn" onclick="setCover('${a.id}')" title="Фото авто">📷</button>`;
+    return `<div class="card autoCard">
+      ${cov}
+      <div style="flex:1;min-width:0">
+        <div class="big" style="font-size:16px;font-weight:700">${esc(a.plate)} ${st}</div>
+        <div class="meta">${esc(a.model||'—')}${a.cap?' · '+a.cap+' т':''}${a.driver?'<br>👤 '+esc(a.driver):''}${a.phone?' · '+esc(a.phone):''}</div>
+        <div class="meta" style="margin-top:3px">Рейсов: <b>${ts.length}</b> · <b>${fmtT(kg)} т</b> · ${fmt(m3,1)} м³</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn small" onclick="editAuto('${a.id}')">✏️</button>
+        <button class="btn small danger" onclick="delAuto('${a.id}')">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ================== ЭКСПОРТ ================== */
+function expFiltered(){
+  const st=$('eStatus').value;
+  let list=filteredTrips('e');
+  if(st)list=list.filter(t=>t.status===st);
+  return list;
+}
+function renderExp(){
+  fillSelects();
+  const list=expFiltered();
+  const kg=list.reduce((s,t)=>t.status!=='cancelled'?s+(+t.kg||0):s,0);
+  const m3=list.reduce((s,t)=>t.status!=='cancelled'?s+(+t.m3||0):s,0);
+  $('expSummary').innerHTML=`Рейсов: <b>${list.length}</b> · <b>${fmtT(kg)} т</b> · <b>${fmt(m3,1)} м³</b>`;
+  renderExpPhotos();
+}
+async function renderExpPhotos(){
+  const kind=$('eKind').value,from=$('eFrom').value,to=$('eTo').value,a=$('eAuto').value,f=$('eFrac').value;
+  let all=await dbAll();
+  all=all.filter(p=>{
+    if(kind&&p.kind!==kind)return false;
+    if(from&&p.date<from)return false;
+    if(to&&p.date>to)return false;
+    if(a&&p.autoId!==a)return false;
+    if(f&&p.fractionId!==f)return false;
+    return true;
+  }).sort((x,y)=>y.ts-x.ts);
+  $('expPhotos').innerHTML=all.length?'':'<div class="empty">Фото по фильтрам не найдены</div>';
+  for(const p of all){
+    const d=document.createElement('div');d.className='thumb';d.dataset.pid=p.id;
+    d.innerHTML=`<input type="checkbox" class="phChk"><img src="${URL.createObjectURL(p.blob)}" onclick="openLB([this.src],0)"><span class="tk">${kindName[p.kind]||'Фото'} · ${esc(plateOf(p.autoId))} · ${fmtD(p.date)}</span>`;
+    $('expPhotos').appendChild(d);
+  }
+}
+function selectAllPhotos(v){document.querySelectorAll('.phChk').forEach(c=>c.checked=v)}
+function tableHTML(list){
+  const rows=list.map((t,i)=>{
+    const a=autos.find(x=>x.id===t.autoId)||{},f=fracOf(t.fractionId),rt=routeOf(t.routeId);
+    return `<tr><td>${i+1}</td><td>${esc(t.num||'')}</td><td>${fmtDT(t.date)}</td><td>${esc(a.plate||'—')}</td><td>${esc(a.model||'')}</td><td>${esc(f?f.name:'')}</td><td>${esc(rt?rt.from:'')}</td><td>${esc(rt?rt.to:'')}</td><td style="text-align:right">${fmt(t.kg)}</td><td style="text-align:right">${fmt(t.m3,1)}</td><td>${f?f.density:''}</td><td>${stName[t.status]}</td><td>${esc(t.note||'')}</td><td style="text-align:center">${(t.photoIds||[]).length}</td></tr>`;
+  }).join('');
+  const kg=list.reduce((s,t)=>t.status!=='cancelled'?s+(+t.kg||0):s,0);
+  const m3=list.reduce((s,t)=>t.status!=='cancelled'?s+(+t.m3||0):s,0);
+  return `<h2>Отчёт по привезённому щебню — Учёт щебня GH</h2>
+<p>Сформирован: ${new Date().toLocaleString('ru-RU')} · Рейсов: ${list.length} · Итого: ${fmtT(kg)} т / ${fmt(m3,1)} м³</p>
+<table border="1" cellspacing="0" cellpadding="4"><tr style="background:#dfeee4;font-weight:bold"><th>№</th><th>Накладная</th><th>Дата</th><th>Гос.номер</th><th>Марка</th><th>Фракция</th><th>Откуда</th><th>Куда</th><th>кг</th><th>м³</th><th>Плотн.</th><th>Статус</th><th>Примечание</th><th>Фото</th></tr>${rows}
+<tr style="font-weight:bold;background:#f2f2f2"><td colspan="8">ИТОГО</td><td style="text-align:right">${fmt(kg)}</td><td style="text-align:right">${fmt(m3,1)}</td><td colspan="4"></td></tr></table>
+<p style="color:#666;font-size:12px">Green House • Учёт щебня • ${new Date().getFullYear()}</p>`;
+}
+function expExcel(){
+  const list=expFiltered();if(!list.length){toast('Нет данных по фильтрам');return}
+  const html=`<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>${tableHTML(list)}</body></html>`;
+  dl(new Blob(['\ufeff'+html],{type:'application/vnd.ms-excel'}),'щебень_'+dKey(new Date().toISOString())+'.xls');
+}
+function expWord(){
+  const list=expFiltered();if(!list.length){toast('Нет данных по фильтрам');return}
+  const html=`<html xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body>${tableHTML(list)}</body></html>`;
+  dl(new Blob(['\ufeff'+html],{type:'application/msword'}),'щебень_'+dKey(new Date().toISOString())+'.doc');
+}
+function selectedPhotoRecs(){
+  const ids=[...document.querySelectorAll('.phChk:checked')].map(c=>c.closest('.thumb').dataset.pid);
+  return (ids.length?ids:Object.values(PH).map(p=>p.id)).map(id=>PH[id]).filter(Boolean);
+}
+async function downloadSelPhotos(){
+  const recs=selectedPhotoRecs();if(!recs.length){toast('Нет фото');return}
+  toast('Скачивание '+recs.length+' фото…');
+  for(let i=0;i<recs.length;i++){
+    const r=recs[i];
+    dl(r.blob,`${r.date}_${plateOf(r.autoId).replace(/\s/g,'')}_${r.kind}_${i+1}.jpg`);
+    await new Promise(s=>setTimeout(s,400));
+  }
+}
+async function photoReport(){
+  const recs=selectedPhotoRecs();if(!recs.length){toast('Нет фото');return}
+  let body='';
+  for(const r of recs){
+    const b64=await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.readAsDataURL(r.blob)});
+    body+=`<figure style="display:inline-block;margin:8px;vertical-align:top"><img src="${b64}" style="max-width:340px;max-height:260px;border-radius:8px"><figcaption style="font-size:12px;color:#555">${kindName[r.kind]||'Фото'} · ${esc(plateOf(r.autoId))} · ${fmtD(r.date)}</figcaption></figure>`;
+  }
+  const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Фотоотчёт — Учёт щебня GH</title></head><body style="font-family:Arial;background:#f5f5f5;padding:16px"><h2>Фотоотчёт: щебень (${recs.length} фото)</h2><p>Сформирован ${new Date().toLocaleString('ru-RU')} · Green House</p>${body}</body></html>`;
+  dl(new Blob([html],{type:'text/html'}),'фотоотчёт_'+dKey(new Date().toISOString())+'.html');
+}
+
+/* ================== GOOGLE SHEETS ================== */
+const GS_SNIPPET=`function doPost(e){
+  var d = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName('Рейсы') || ss.insertSheet('Рейсы');
+  if (sh.getLastRow() === 0)
+    sh.appendRow(['ID','Накладная','Дата','Госномер','Марка','Фракция','Откуда','Куда','кг','м3','Плотность','Статус','Примечание','Фото,шт']);
+  sh.appendRow([d.id,d.num,d.date,d.plate,d.model,d.fraction,d.from,d.to,d.kg,d.m3,d.density,d.status,d.note,d.photos]);
+  return ContentService.createTextOutput('OK');
+}`;
+function saveGs(){S.gsUrl=$('gsUrl').value.trim();persist();toast(S.gsUrl?'Адрес таблицы сохранён ✓':'Синхронизация отключена')}
+async function gsSend(t){
+  if(!S.gsUrl)return;
+  const a=autos.find(x=>x.id===t.autoId)||{},f=fracOf(t.fractionId),rt=routeOf(t.routeId);
+  await fetch(S.gsUrl,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({id:t.id,num:t.num||'',date:t.date,plate:a.plate||'',model:a.model||'',fraction:f?f.name:'',from:rt?rt.from:'',to:rt?rt.to:'',kg:t.kg,m3:t.m3,density:f?f.density:'',status:stName[t.status],note:t.note||'',photos:(t.photoIds||[]).length})});
+}
+async function gsSendAll(){
+  if(!S.gsUrl){toast('Сначала сохраните адрес скрипта');return}
+  if(!confirm('Отправить все '+trips.length+' рейсов в таблицу?'))return;
+  let n=0;for(const t of trips){try{await gsSend(t);n++}catch(e){}}
+  toast('Отправлено: '+n+' из '+trips.length);
+}
+function copyGs(){navigator.clipboard.writeText(GS_SNIPPET).then(()=>toast('Код скопирован'))}
+
+/* ================== НАСТРОЙКИ / СПРАВОЧНИКИ ================== */
+function renderSet(){
+  $('themeSel').value=S.theme;$('planInput').value=S.planDayT||'';
+  $('mainFracSel').innerHTML=FR.map(f=>`<option value="${f.id}" ${f.id===S.mainFrac?'selected':''}>${esc(f.name)}</option>`).join('');
+  $('gsUrl').value=S.gsUrl||'';$('gsCode').textContent=GS_SNIPPET;
+  $('fracList').innerHTML=FR.map(f=>`<div class="rowList"><b style="flex:1">${esc(f.name)}${f.id===S.mainFrac?' <span class="chip">основная</span>':''}</b>
+    <label class="mut">плотность</label><input type="number" step="0.01" value="${f.density}" onchange="updDens('${f.id}',this.value)">
+    <button class="btn small danger" onclick="delFrac('${f.id}')">✕</button></div>`).join('');
+  $('routeList').innerHTML=RO.map(r=>`<div class="rowList"><b style="flex:1">${esc(r.from)} → ${esc(r.to)}</b><button class="btn small danger" onclick="delRoute('${r.id}')">✕</button></div>`).join('');
+}
+function updDens(id,v){const f=FR.find(x=>x.id===id);if(f){f.density=+v||f.density;persist();toast('Плотность обновлена — пересчёт м³ будет для новых рейсов')}}
+function addFrac(){const n=$('fracName').value.trim(),d=+$('fracDens').value;if(!n){toast('Введите название');return}FR.push({id:uid(),name:n,density:d||1.4});persist();$('fracName').value='';$('fracDens').value='';renderSet()}
+function delFrac(id){if(FR.length<=1){toast('Нужна хотя бы одна фракция');return}if(!confirm('Удалить фракцию?'))return;FR=FR.filter(f=>f.id!==id);if(S.mainFrac===id)S.mainFrac=FR[0].id;persist();renderSet()}
+function addRoute(){const f=$('routeFrom').value.trim(),t=$('routeTo').value.trim();if(!f||!t){toast('Заполните оба поля');return}RO.push({id:uid(),from:f,to:t});persist();$('routeFrom').value='';$('routeTo').value='';renderSet()}
+function delRoute(id){if(!confirm('Удалить маршрут?'))return;RO=RO.filter(r=>r.id!==id);persist();renderSet()}
+function exportBackup(){
+  const data=JSON.parse(localStorage.getItem(LS)||'{}');
+  dl(new Blob([JSON.stringify(data,null,1)],{type:'application/json'}),'backup_щебень_GH_'+dKey(new Date().toISOString())+'.json');
+}
+function importBackup(inp){
+  const f=inp.files[0];inp.value='';if(!f)return;
+  if(!confirm('Текущие данные будут заменены данными из копии. Продолжить?'))return;
+  const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.trips)throw 0;localStorage.setItem(LS,JSON.stringify(d));toast('Данные восстановлены. Перезагрузка…');setTimeout(()=>location.reload(),800)}catch(e){toast('Файл повреждён')}};
+  r.readAsText(f);
+}
+function resetAll(){
+  if(!confirm('Удалить ВСЕ данные и фото безвозвратно?'))return;
+  if(!confirm('Точно? Это действие нельзя отменить.'))return;
+  localStorage.removeItem(LS);indexedDB.deleteDatabase(DBN);location.reload();
+}
+
+/* ================== PWA / APK ================== */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('btnInstall').style.display=''});
+function installApp(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;$('btnInstall').style.display='none'}}
+if('serviceWorker' in navigator&&location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+
+/* ================== СТАРТ ================== */
+function renderAll(){renderDash();renderTrips();renderAutos();fillSelects()}
+document.querySelectorAll('#dashRange button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#dashRange button').forEach(x=>x.classList.remove('on'));b.classList.add('on');dashRange=b.dataset.r==='all'?'all':+b.dataset.r;renderDash()});
+['fFrom','fTo','fSearch'].forEach(i=>$(i).addEventListener('input',renderTrips));
+['fAuto','fFrac'].forEach(i=>$(i).addEventListener('change',renderTrips));
+['eFrom','eTo','eStatus','eKind'].forEach(i=>$(i).addEventListener('input',renderExp));
+['eAuto','eFrac'].forEach(i=>$(i).addEventListener('change',renderExp));
+$('todayDate').textContent=new Date().toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+applyTheme();
+loadPhotos().then(()=>{renderAll();renderSet()});
+</script>
+</body>
+</html>
