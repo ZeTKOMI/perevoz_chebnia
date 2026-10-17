@@ -1,19 +1,36 @@
 {
+  "id": "./",
   "name": "Учёт щебня GH",
   "short_name": "Щебень GH",
-  "description": "Учёт привезённого щебня: рейсы, автопарк, фото, отчёты",
+  "description": "Учёт привезённого щебня: рейсы, автопарк, фото кабины и кузова, инфографика по дням, фракциям и машинам, отчёты в Excel и Word. Работает без интернета.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0b0f14",
   "theme_color": "#0b0f14",
   "lang": "ru",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%230b0f14'/%3E%3Crect x='14' y='40' width='72' height='34' rx='6' fill='%2343b96f'/%3E%3Cpath d='M22 40 L34 22 h32 l12 18z' fill='%232f8f54'/%3E%3Ccircle cx='32' cy='78' r='9' fill='%23243244'/%3E%3Ccircle cx='68' cy='78' r='9' fill='%23243244'/%3E%3C/svg%3E",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Главная — инфографика по дням, фракциям и авто"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Журнал рейсов на компьютере"
     }
   ]
 }
